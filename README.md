@@ -20,7 +20,7 @@ Functionality is extended by the ability to update & delete TXT records making t
   INSERT INTO `permissions` (`user_id`,`hostname`) VALUES (1,`.sub.mycorp.com`);
   ```
   The user_id needs to be adapted, e.g. using the id of the user we created previously.\
-  A hostname value starting with '.' (like .sub.mycorp.com) is a wildcard entry, this means the user my update any record that ends with this value in the zone provided.\
+  A hostname value starting with '.' (like .sub.mycorp.com) is a wildcard entry, this means the user my update any record that ends with this value in the zone provided.
   
 
 ## Examples
@@ -37,6 +37,6 @@ Clear (and remove) TXT record:\
 
 ## References
 
-[1] https://help.dyn.com/remote-access-api/perform-update/\
-[2] https://help.dyn.com/remote-access-api/return-codes/\
+[1] https://help.dyn.com/remote-access-api/perform-update/ \
+[2] https://help.dyn.com/remote-access-api/return-codes/ \
 [3] https://github.com/BastiG/certbot-dns-webservice
