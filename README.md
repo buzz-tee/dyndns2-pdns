@@ -16,8 +16,8 @@ Functionality is extended by the ability to update & delete TXT records making t
   Note that '$2y$10$cjaSgipjSg6V/XStI9lx7.LJTo2QcDvxxGhlrnu6uZe8j02xh6Rhm' is what you get from `htpasswd -bnBC 10 "" 'password' | tr -d ':'`
 * Setup permissions to use DynDNS update like
   ```sql
-  INSERT INTO `permissions` (`user_id`,`hostname`) VALUES (1,`web1.mycorp.com`);
-  INSERT INTO `permissions` (`user_id`,`hostname`) VALUES (1,`.sub.mycorp.com`);
+  INSERT INTO `permissions` (`user_id`,`hostname`) VALUES (1,'web1.mycorp.com');
+  INSERT INTO `permissions` (`user_id`,`hostname`) VALUES (1,'.sub.mycorp.com');
   ```
   The user_id needs to be adapted, e.g. using the id of the user we created previously.\
   A hostname value starting with '.' (like .sub.mycorp.com) is a wildcard entry, this means the user my update any record that ends with this value in the zone provided.
