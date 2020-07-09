@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.1
+-- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Erstellungszeit: 27. Okt 2019 um 22:46
--- Server-Version: 10.4.8-MariaDB-log
--- PHP-Version: 7.3.11
+-- Erstellungszeit: 09. Jul 2020 um 10:46
+-- Server-Version: 10.4.13-MariaDB-log
+-- PHP-Version: 7.4.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -30,8 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `permissions` (
   `user_id` int(10) UNSIGNED NOT NULL,
-  `host` varchar(511) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `zone` varchar(511) COLLATE utf8mb4_unicode_ci NOT NULL
+  `hostname` varchar(511) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -55,7 +53,7 @@ CREATE TABLE `users` (
 -- Indizes für die Tabelle `permissions`
 --
 ALTER TABLE `permissions`
-  ADD KEY `user_hosts` (`user_id`,`host`) USING BTREE;
+  ADD PRIMARY KEY (`user_id`,`hostname`) USING BTREE;
 
 --
 -- Indizes für die Tabelle `users`
