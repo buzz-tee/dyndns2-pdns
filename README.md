@@ -1,4 +1,4 @@
-# dyndns-pdns
+# dyndns2-pdns
 
 A thin wrapper around PowerDNS API to implement a basic DynDNS 2 protocol layer, see [[1](#references)] and [[2](#references)].\
 Functionality is extended by the ability to update & delete TXT records making this usable for name validation by letsencrypt, see [[3](#references)] and [[4](#refrences)].
