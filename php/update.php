@@ -2,76 +2,9 @@
 
 include_once('config.inc.php');
 
-function fail($code, $message, $details = NULL) {
-    error_log('dyn-update / ' . $message . ': ' . $details);
-
-    http_response_code($code);
-    exit($message);
-}
-
-function verify_credentials($db, $user, $pass) {
-    // generate a password using command
-    // htpasswd -bnBC 10 "" 'mypassword' | tr -d ':'
-    foreach ($db->query('SELECT `id`,`password` FROM `users` WHERE `active`=1 AND `username`=' . $db->quote($user)) as $row) {
-        if (password_verify($pass, $row['password'])) {
-            return $row['id'];
-        }
-    }
-    return false;
-}
-
-function match_domain($domain, $pattern) {
-    if ($pattern[0] !== '.') {
-        return ($domain === $pattern);
-    }
-    $length = strlen($pattern);
-    if ($length == 0) {
-        return true;
-    }
-    return (substr($domain, -$length) === $pattern);
-}
-
-function verify_hostname($db, $user_id, $hostname, $zones) {
-    foreach($db->query('SELECT `hostname` FROM `permissions` WHERE `user_id`='.$user_id) as $row) {
-        if (match_domain($hostname, $row['hostname'])) {
-            $hostname_zone = false;
-            foreach ($zones as $zone) {
-                if (strlen($zone) > strlen($hostname_zone) && substr($hostname, -strlen($zone)) === $zone) {
-                    $hostname_zone = $zone;
-                }
-            }
-
-            return $hostname_zone;
-        }
-    }
-    return false;
-}
-
-function build_rrset($hostname, $type, $content) {
-    $rrset = array(
-        'name' => $hostname,
-        'type' => $type,
-        'ttl' => DEFAULT_TTL
-    );
-    if ($content == '') {
-        $rrset['changetype'] = 'DELETE';
-        $rrset['records'] = array();
-    } else {
-        if ($type === 'TXT') {
-            $content = '"' . addslashes($content) . '"';
-        }
-        $rrset['changetype'] = 'REPLACE';
-        $rrset['records'] = array(
-            array(
-                'content' => $content,
-                'disabled' => FALSE,
-                'priority' => 0
-            )
-        );
-    }
-    return $rrset;
-}
-
+include_once('common.inc.php');
+include_once('pdns.inc.php');
+include_once('hooks.inc.php');
 
 if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
     header('WWW-Authenticate: Basic realm="DynDNS"');
@@ -129,7 +62,10 @@ if ($hostname_input) {
             $hostname = $extra . $hostname . '.';
             $zone = verify_hostname($db, $user_id, $hostname, $zones);
             if ($zone) {
-                $hostnames[$hostname] = $zone;
+                $hostnames[$hostname] = array(
+                    'zone' => $zone,
+                    'hooks' => Hook::load($db, $hostname),
+                );
             } else {
                 $db = null;
                 curl_close($ch);
@@ -201,7 +137,7 @@ $ipv4 = isset($ipv4) ? $ipv4 : false;
 $ipv6 = isset($ipv6) ? $ipv6 : false;
 $txt = isset($txt) ? $txt : false;
 
-foreach($hostnames as $hostname => $zone) {
+foreach($hostnames as $hostname => $info) {
     $rrsets = [];
     if ($ipv4 !== false) {
         $rrsets[] = build_rrset($hostname, 'A', $ipv4);
@@ -215,7 +151,7 @@ foreach($hostnames as $hostname => $zone) {
 
     $payload = json_encode(array('rrsets' => $rrsets));
 
-    curl_setopt($ch, CURLOPT_URL, PDNS_ZONES_URL . '/' . $zone);
+    curl_setopt($ch, CURLOPT_URL, PDNS_ZONES_URL . '/' . $info['zone']);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
     $response = curl_exec($ch);
@@ -223,7 +159,11 @@ foreach($hostnames as $hostname => $zone) {
 
     if ($response_code >= 400) {
         curl_close($ch);
-        fail($response_code, 'dnserr', 'PowerDNS API failed: ' . $hostname . '/' . $zone . ' = IPv4 ' . $ipv4 . ', IPv6 ' . $ipv6 . ', TXT ' . $txt . ' => ' . $response);
+        fail($response_code, 'dnserr', 'PowerDNS API failed: ' . $hostname . '/' . $info['zone'] . ' = IPv4 ' . $ipv4 . ', IPv6 ' . $ipv6 . ', TXT ' . $txt . ' => ' . $response);
+    }
+
+    foreach($info['hooks'] as $hook) {
+        $hook->execute($ipv4, $ipv6,$txt);
     }
 }
 

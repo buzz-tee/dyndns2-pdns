@@ -14,14 +14,22 @@ Functionality is extended by the ability to update & delete TXT records making t
   INSERT INTO `users` (`active`,`username`,`password`) VALUES (1,'username','$2y$10$cjaSgipjSg6V/XStI9lx7.LJTo2QcDvxxGhlrnu6uZe8j02xh6Rhm')
   ```
   Note that '$2y$10$cjaSgipjSg6V/XStI9lx7.LJTo2QcDvxxGhlrnu6uZe8j02xh6Rhm' is what you get from `htpasswd -bnBC 10 "" 'password' | tr -d ':'`
-* Setup permissions to use DynDNS update like
+  Setup the domain names and permissions to use DynDNS update like
   ```sql
-  INSERT INTO `permissions` (`user_id`,`hostname`) VALUES (1,'web1.mycorp.com');
-  INSERT INTO `permissions` (`user_id`,`hostname`) VALUES (1,'.sub.mycorp.com');
+  INSERT INTO `hostnames` (`hostname`) VALUES ('web1.mycorp.com.');
+  INSERT INTO `hostnames` (`hostname`) VALUES ('.sub.mycorp.com.');
+  INSERT INTO `permissions` (`user_id`,`hostname_id`) VALUES (1,1);
+  INSERT INTO `permissions` (`user_id`,`hostname_id`) VALUES (1,2);
   ```
-  The user_id needs to be adapted, e.g. using the id of the user we created previously.\
+  Hostnames need to end with a '.' signifying an FQDN.\
+  Note: The values for user_id and hostname_id may need to be adapted, i.e. using the id's of the user and hostnames we created previously.\
   A hostname value starting with '.' (like .sub.mycorp.com) is a wildcard entry, this means the user my update any record that ends with this value in the zone provided.
-  
+
+
+## Hooks
+
+TBD
+
 
 ## Examples
 
