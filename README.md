@@ -1,8 +1,7 @@
 # dyndns2-pdns
 
 A thin wrapper around PowerDNS API to implement a basic DynDNS 2 protocol layer, see [[1](#references)] and [[2](#references)].\
-Functionality is extended by the ability to update & delete TXT records making this usable for name validation by letsencrypt, see [[3](#references)] and [[4](#refrences)].
-
+Functionality is extended by the ability to update & delete TXT records making this usable for name validation by letsencrypt, see [[3](#references)] and [[4](#refrences)]. In order to support embedded installations of acme clients we also support acmeproxy syntax.
 
 ## Installation
 
@@ -31,16 +30,32 @@ Functionality is extended by the ability to update & delete TXT records making t
 TBD
 
 
+## How to use acmeproxy
+
+acmeproxy requires three parameters:
+ENDPOINT_URL=https://www.myhost.com/dyn/update.php?acmeproxy=
+USERNAME=username
+PASSWORD=password
+
+
 ## Examples
 
 Update IPv4:\
 `https://username:password@www.myhost.com/dyn/update.php?hostname=web1.mycorp.com&myip=127.0.0.1`
 
 Set TXT record:\
-`https://username:password@www.myhost.com/dyn/update.php?hostname=acme-challenge.db1.sub.mycorp.com&txt=12345678`
+`https://username:password@www.myhost.com/dyn/update.php?hostname=_acme-challenge.db1.sub.mycorp.com&txt=12345678`
 
 Clear (and remove) TXT record:\
-`https://username:password@www.myhost.com/dyn/update.php?hostname=acme-challenge.db1.sub.mycorp.com&txt=`
+`https://username:password@www.myhost.com/dyn/update.php?hostname=_acme-challenge.db1.sub.mycorp.com&txt=`
+
+Set TXT record via acmeproxy:\
+`https://username:password@www.myhost.com/dyn/update.php?acmeproxy=/present`
+`{"fqdn":"_acme-challenge.db1.sub.mycorp.com","value":"12345678"}`
+
+Clear (and remove) TXT record via acmeproxy:\
+`https://username:password@www.myhost.com/dyn/update.php?acmeproxy=/cleanup`
+`{"fqdn":"_acme-challenge.db1.sub.mycorp.com","value":"12345678"}`
 
 
 ## References
