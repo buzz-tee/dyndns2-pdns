@@ -47,12 +47,11 @@ foreach(json_decode($response, true) as $zone) {
     $zones[] = $zone['id'];
 }
 
-if (isset($_GET['acmeproxy']) {
+if (isset($_GET['acmeproxy'])) {
     $acmeproxy_action = ltrim($_GET['acmeproxy'], '/');
-    $inputJSON = file_get_contents('php://input');
-    $input = json_decode($inputJSON, TRUE);
-    $acmeproxy_hostname = rtrim($input['fqdn'], '.');
-    $acmeproxy_txt = $input['value'];
+    $acmeproxy_input = json_decode(file_get_contents('php://input'), true);
+    $acmeproxy_hostname = rtrim($acmeproxy_input['fqdn'], '.');
+    $acmeproxy_txt = $acmeproxy_input['value'];
 }
 
 if (isset($_GET['hostname'])) {
@@ -185,8 +184,7 @@ foreach($hostnames as $hostname => $info) {
 
 curl_close($ch);
 
+echo 'good';
 if (isset($acmeproxy_txt)) {
-    echo $acmeproxy_txt;
-} else {
-    echo "good";
+    echo ' (TXT="' . $acmeproxy_txt . '")';
 }
