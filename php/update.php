@@ -47,7 +47,21 @@ foreach(json_decode($response, true) as $zone) {
     $zones[] = $zone['id'];
 }
 
-$hostname_input = isset($_GET['hostname']) ? $_GET['hostname'] : false;
+if (isset($_GET['acmeproxy']) {
+    $acmeproxy_action = ltrim($_GET['acmeproxy'], '/');
+    $inputJSON = file_get_contents('php://input');
+    $input = json_decode($inputJSON, TRUE);
+    $acmeproxy_hostname = rtrim($input['fqdn'], '.');
+    $acmeproxy_txt = $input['value'];
+}
+
+if (isset($_GET['hostname'])) {
+    $hostname_input = $_GET['hostname'];
+} elseif (isset($acmeproxy_hostname)) {
+    $hostname_input = $acmeproxy_hostname;
+} else {
+    $hostname_input = false;
+}
 $hostnames = array();
 if ($hostname_input) {
     $hostname_input = explode(',', $hostname_input);
@@ -69,7 +83,7 @@ if ($hostname_input) {
             } else {
                 $db = null;
                 curl_close($ch);
-                fail(400, 'nohost', 'Hostname = ' . $hostname . ' is invalid for user');
+                fail(400, 'nohost', 'Hostname = ' . $hostname . ' is invalid for user ' . $user . ' (' . $user_id . ')');
             }
         }
     }
@@ -126,6 +140,8 @@ if (isset($_GET['myip'])) {
 }
 if (isset($_GET['txt'])) {
     $txt = $_GET['txt'];
+} elseif (isset($acmeproxy_action) && isset($acmeproxy_txt)) {
+    $txt = $acmeproxy_action == 'present' ? $acmeproxy_txt : '';
 }
 
 if (!isset($ipv4) && !isset($ipv6) && !isset($txt)) {
@@ -168,4 +184,9 @@ foreach($hostnames as $hostname => $info) {
 }
 
 curl_close($ch);
-echo "good";
+
+if (isset($acmeproxy_txt)) {
+    echo $acmeproxy_txt;
+} else {
+    echo "good";
+}
